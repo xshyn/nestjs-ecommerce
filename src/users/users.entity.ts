@@ -2,9 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Cart } from '../carts/carts.entity';
+import { Order } from '../orders/orders.entity';
 
 @Entity('users')
 export class User {
@@ -22,4 +26,10 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToOne(() => Cart, (cart) => cart.user)
+  cart: Cart;
+
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
 }
