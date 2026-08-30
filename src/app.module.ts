@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { ProductsModule } from './products/products.module';
-import { OrdersModule } from './orders/orders.module';
-import { CartsModule } from './carts/carts.module';
-import { InventoryModule } from './inventory/inventory.module';
+import { UsersModule } from './modules/users/users.module';
+import { ProductsModule } from './modules/products/products.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { CartsModule } from './modules/carts/carts.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './users/users.entity';
-import { Product } from './products/products.entity';
-import { Order } from './orders/orders.entity';
-import { OrderItem } from './orders/order-item.entity';
-import { Inventory } from './inventory/inventory.entity';
-import { Cart } from './carts/carts.entity';
-import { CartItem } from './carts/cart-items.entity';
-import { AuthModule } from './auth/auth.module';
+import { User } from './modules/users/users.entity';
+import { Product } from './modules/products/products.entity';
+import { Order } from './modules/orders/orders.entity';
+import { OrderItem } from './modules/orders/order-item.entity';
+import { Inventory } from './modules/inventory/inventory.entity';
+import { Cart } from './modules/carts/carts.entity';
+import { CartItem } from './modules/carts/cart-items.entity';
+import { AuthModule } from './modules/auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -23,6 +24,9 @@ import { AuthModule } from './auth/auth.module';
     OrdersModule,
     CartsModule,
     InventoryModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
