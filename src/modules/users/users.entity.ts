@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Cart } from '../carts/carts.entity';
 import { Order } from '../orders/orders.entity';
+import { Roles } from './types/roles.enum';
 
 @Entity('users')
 export class User {
@@ -20,6 +21,14 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({
+    type: 'enum',
+    enum: Roles,
+    array: true,
+    default: [Roles.USER],
+  })
+  roles: Roles[];
 
   @CreateDateColumn()
   createdAt: Date;

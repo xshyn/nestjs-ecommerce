@@ -15,6 +15,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     return {
       email: user.email,
       userId: user.id,
+      roles: user.roles,
     } as Payload;
   }
 }
