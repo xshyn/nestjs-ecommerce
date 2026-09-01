@@ -18,7 +18,7 @@ export class UsersController {
     return this.service.findAll();
   }
 
-  @Get('/profile')
+  @Get('/me')
   profile(@Request() req: { user: Payload }) {
     return this.service.findBy({ id: req.user.userId });
   }
