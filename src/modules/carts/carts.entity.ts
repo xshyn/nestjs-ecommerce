@@ -16,7 +16,7 @@ export class Cart {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'uuid', unique: true })
   userId: string;
 
   @CreateDateColumn()

@@ -13,7 +13,7 @@ export class Inventory {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'uuid', unique: true })
   productId: string;
 
   @Column({ type: 'integer', default: 0 })

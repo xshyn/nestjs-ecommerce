@@ -35,7 +35,7 @@ import { ConfigModule } from '@nestjs/config';
       password: 'root',
       database: 'nest_ecommerce',
       synchronize: true,
-      entities: [User, Product, Order, OrderItem, Inventory, Cart, CartItem],
+      autoLoadEntities: true,
     }),
     AuthModule,
   ],

@@ -17,7 +17,7 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   name: string;
 
   @Column({ type: 'text', nullable: true })
@@ -30,7 +30,7 @@ export class Product {
   })
   price: string;
 
-  @Column({ default: true })
+  @Column({ type: 'bool', default: true })
   isActive: boolean;
 
   @CreateDateColumn()

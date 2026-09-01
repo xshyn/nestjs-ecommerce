@@ -13,13 +13,13 @@ export class OrderItem {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'uuid' })
   orderId: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
   productId: string | null;
 
-  @Column()
+  @Column({ type: 'text' })
   productName: string;
 
   @Column({

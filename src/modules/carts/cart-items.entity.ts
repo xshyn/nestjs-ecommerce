@@ -9,16 +9,16 @@ import {
 import { Cart } from './carts.entity';
 import { Product } from '../products/products.entity';
 
-@Entity('cart_itmes')
+@Entity('cart_items')
 @Unique(['cartId', 'productId'])
 export class CartItem {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'uuid' })
   cartId: string;
 
-  @Column()
+  @Column({ type: 'uuid' })
   productId: string;
 
   @Column({ type: 'integer' })
