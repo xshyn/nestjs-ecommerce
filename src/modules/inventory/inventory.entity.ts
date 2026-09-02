@@ -22,7 +22,9 @@ export class Inventory {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToOne(() => Product, (product) => product.inventory)
+  @OneToOne(() => Product, (product) => product.inventory, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'productId' })
   product: Product;
 }

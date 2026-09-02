@@ -18,20 +18,25 @@ import { RoleGuard } from '../../guards/role.guard';
 export class InventoryController {
   constructor(private readonly service: InventoryService) {}
 
+  @Role(Roles.ADMIN)
+  @UseGuards(JwtAuthGuard, RoleGuard)
   @Get()
   find() {
     return this.service.find();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.findOne({ id });
+  @Get(':productId')
+  findOne(@Param('productId', ParseUUIDPipe) productId: string) {
+    return this.service.findOne({ productId });
   }
 
   @Role(Roles.ADMIN)
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: Inventory) {
-    return this.service.update({ id }, data);
+  @Patch(':productId')
+  update(
+    @Param('id', ParseUUIDPipe) productId: string,
+    @Body() data: Inventory,
+  ) {
+    return this.service.update({ productId }, data);
   }
 }

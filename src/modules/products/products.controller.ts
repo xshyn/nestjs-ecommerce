@@ -23,8 +23,8 @@ export class ProductsController {
   @Role(Roles.ADMIN)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Post()
-  create(@Body() data: Product) {
-    return this.service.create(data);
+  save(@Body() data: Product) {
+    return this.service.save(data);
   }
 
   @Get()
