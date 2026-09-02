@@ -27,14 +27,14 @@ export class InventoryController {
 
   @Get(':productId')
   findOne(@Param('productId', ParseUUIDPipe) productId: string) {
-    return this.service.findOne({ productId });
+    return this.service.findOne({ where: { productId } });
   }
 
   @Role(Roles.ADMIN)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Patch(':productId')
   update(
-    @Param('id', ParseUUIDPipe) productId: string,
+    @Param('productId', ParseUUIDPipe) productId: string,
     @Body() data: Inventory,
   ) {
     return this.service.update({ productId }, data);

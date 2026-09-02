@@ -1,12 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Inventory } from './inventory.entity';
 import {
   DataSource,
   FindManyOptions,
+  FindOneOptions,
   FindOptionsWhere,
+  QueryDeepPartialEntity,
   Repository,
 } from 'typeorm';
+import { Product } from '../products/products.entity';
 
 @Injectable()
 export class InventoryService {
@@ -19,11 +26,29 @@ export class InventoryService {
     return this.inventoryRepo.find(options);
   }
 
-  findOne(where?: FindOptionsWhere<Inventory>) {
-    return this.inventoryRepo.findOne({ where });
+  async findOne(options: FindOneOptions<Inventory>, throwIfNotFound = false) {
+    const inventory = await this.inventoryRepo.findOne(options);
+    if (!inventory && throwIfNotFound)
+      throw new NotFoundException('Inventory not found');
+    return inventory;
   }
 
-  update(where: FindOptionsWhere<Inventory>, data: Inventory) {
-    return this.inventoryRepo.update(where, data);
+  async update(
+    where: FindOptionsWhere<Inventory>,
+    data: QueryDeepPartialEntity<Inventory>,
+    throwIfNotFound = false,
+  ) {
+    const result = await this.inventoryRepo.update(where, data);
+    if ((!result.affected || result.affected < 1) && throwIfNotFound)
+      throw new NotFoundException('Inventory not found');
+    return result;
+  }
+
+  async checkAvailability(product: Product, quantity: number) {
+    if (!product?.inventory) throw new NotFoundException('Inventory not found');
+    if (product.inventory.quantity < quantity) {
+      throw new BadRequestException('Insufficient inventory quantity');
+    }
+    return true;
   }
 }

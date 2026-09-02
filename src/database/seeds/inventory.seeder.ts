@@ -20,7 +20,7 @@ export class InventorySeeder implements Seeder {
 
     for (const product of products) {
       const inventory = await inventoryFactory.make();
-      inventory.product = product; // productId is set implicitly via the relation
+      inventory.product = product;
       await inventoryRepo.save(inventory);
     }
   }

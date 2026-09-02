@@ -34,7 +34,12 @@ export class ProductsController {
 
   @Get('/:id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.findOne({ id });
+    return this.service.findOne({
+      where: { id },
+      relations: {
+        inventory: true,
+      },
+    });
   }
 
   @Role(Roles.ADMIN)
