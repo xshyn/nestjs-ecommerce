@@ -7,4 +7,5 @@ export const CACHE_TTL = {
 
 export const CACHE_VERSION = {
   PRODUCTS: 'products:version',
+  PRODUCTS_LIST: 'products:list:version',
 };

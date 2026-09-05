@@ -16,6 +16,7 @@ import { Cart } from './modules/carts/carts.entity';
 import { CartItem } from './modules/carts/cart-items.entity';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { CacheModule } from './modules/cache/cache.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ConfigModule } from '@nestjs/config';
       autoLoadEntities: true,
     }),
     AuthModule,
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],

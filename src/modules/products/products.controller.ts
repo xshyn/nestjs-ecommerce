@@ -7,8 +7,11 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { ProductsService } from './products.service';
 import { Product } from './products.entity';
 import { Role } from '../../decorators/role.decorator';
@@ -28,8 +31,8 @@ export class ProductsController {
   }
 
   @Get()
-  find() {
-    return this.service.find();
+  list(@Query() query: any) {
+    return this.service.list({}, query);
   }
 
   @Get('/:id')
