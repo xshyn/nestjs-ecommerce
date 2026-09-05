@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../users/users.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Payload } from '../../types/payload.interface';
+import { SignupDto } from './schemas/signup.schema';
 
 @Injectable()
 export class AuthService {
@@ -26,10 +27,10 @@ export class AuthService {
     const access_token = this.jwtService.sign(payload);
     return { access_token };
   }
-  async signup(data: User) {
+  async signup(signupDto: SignupDto) {
     return this.userService.create({
-      email: data.email,
-      password: this.hashPass(data.password),
+      email: signupDto.email,
+      password: this.hashPass(signupDto.password),
     });
   }
   async validateUser(email: string, password: string) {
