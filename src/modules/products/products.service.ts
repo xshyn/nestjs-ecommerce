@@ -6,6 +6,7 @@ import {
   FindManyOptions,
   FindOneOptions,
   FindOptionsWhere,
+  ILike,
   JsonContains,
   QueryDeepPartialEntity,
   Repository,
@@ -14,6 +15,9 @@ import { Inventory } from '../inventory/inventory.entity';
 import { CacheService } from '../cache/cache.service';
 import { CacheKeys } from '../cache/cache.keys';
 import { CACHE_TTL, CACHE_VERSION } from '../cache/cache.constants';
+import { CreateProductDto } from './schemas/create-product.schema';
+import { UpdateProductDto } from './schemas/update-product.schema';
+import { ProductsQueryDto } from './schemas/products-query.schema';
 
 @Injectable()
 export class ProductsService {
@@ -24,19 +28,20 @@ export class ProductsService {
     private readonly cacheService: CacheService,
   ) {}
 
-  async save(data: Product) {
+  async save(createProductDto: CreateProductDto) {
     return this.dataSource.transaction(async (manager) => {
       const product = manager.create(Product, {
-        name: data.name,
-        description: data.description,
-        price: data.price,
+        name: createProductDto.name,
+        description: createProductDto.description,
+        price: createProductDto.price.toFixed(2),
+        isActive: createProductDto.isActive,
       });
 
       const savedProduct = await manager.save(Product, product);
 
       const inventory = manager.create(Inventory, {
         product: savedProduct,
-        quantity: 0,
+        quantity: createProductDto.quantity,
       });
 
       await manager.save(Inventory, inventory);
@@ -45,24 +50,30 @@ export class ProductsService {
     });
   }
 
-  async find(where?: FindOptionsWhere<Product>, page?: number, take?: number) {
-    return this.productRepo.find({
-      where: where ? where : {},
-      ...(take && { take }),
-      ...(take && page && { skip: (page - 1) * take }),
-      relations: { inventory: true },
-    });
-  }
-
   async list(
     where?: FindOptionsWhere<Product>,
-    query?: { limit?: number; page?: number },
+    productsQueryDto?: ProductsQueryDto,
   ) {
-    const limit = query?.limit ?? 10;
-    const page = query?.page ?? 1;
+    const productFieldsQuery = {
+      ...(productsQueryDto?.id && { id: productsQueryDto.id }),
+      ...(productsQueryDto?.isActive !== undefined && {
+        isActive: productsQueryDto.isActive,
+      }),
+    };
+
+    const productPaginationQuery = {
+      ...(productsQueryDto?.limit && { limit: productsQueryDto.limit }),
+      ...(productsQueryDto?.page && { page: productsQueryDto.page }),
+    };
+
+    const searchExists = !!productsQueryDto?.search;
+
     const queryKey = JSON.stringify({
-      limit,
-      page,
+      ...productPaginationQuery,
+      ...productFieldsQuery,
+      ...(searchExists && {
+        search: productsQueryDto.search!.trim(),
+      }),
     });
 
     const cacheVersion = await this.cacheService.getVersion(
@@ -76,7 +87,19 @@ export class ProductsService {
       return cached;
     }
 
-    const products = await this.find(where, page, limit);
+    const products = await this.productRepo.find({
+      take: productsQueryDto?.limit,
+      skip: productsQueryDto?.skip,
+      where: [
+        ...(productFieldsQuery ? [productFieldsQuery] : []),
+        ...(searchExists
+          ? [
+              { name: ILike(`%${productsQueryDto.search}%`) },
+              { description: ILike(`%${productsQueryDto.search}%`) },
+            ]
+          : []),
+      ],
+    });
 
     await this.cacheService.set(
       CacheKeys.productList(cacheVersion, queryKey),
@@ -117,10 +140,15 @@ export class ProductsService {
 
   async update(
     where: FindOptionsWhere<Product>,
-    data: QueryDeepPartialEntity<Product>,
+    updateProductDto: UpdateProductDto,
     throwIfNotFound = false,
   ) {
-    const result = await this.productRepo.update(where, data);
+    const result = await this.productRepo.update(where, {
+      isActive: updateProductDto?.isActive,
+      name: updateProductDto?.name,
+      price: updateProductDto?.price?.toFixed(2),
+      description: updateProductDto?.description,
+    });
     if ((!result.affected || result.affected < 1) && throwIfNotFound)
       throw new NotFoundException('Product not found');
     return result;

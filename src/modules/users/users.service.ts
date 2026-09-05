@@ -1,8 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
-import { FindOptionsWhere, ILike, In, Like, Repository } from 'typeorm';
+import {
+  Any,
+  ArrayContains,
+  ArrayOverlap,
+  FindOptionsWhere,
+  ILike,
+  In,
+  Repository,
+} from 'typeorm';
 import { UserQueryDto } from './schemas/user-query.schema';
+import { Roles } from './types/roles.enum';
 
 @Injectable()
 export class UsersService {
@@ -19,7 +28,11 @@ export class UsersService {
           ...(query?.id && { id: query.id }),
           ...(query?.email && { email: query.email }),
           ...(query?.roles && {
-            roles: Array.isArray(query.roles) ? query.roles : [query.roles],
+            roles: Array.isArray(query.roles)
+              ? query.roles
+              : query.roles == Roles.ADMIN
+                ? ArrayOverlap([query.roles])
+                : [query.roles],
           }),
         } as FindOptionsWhere<User>,
         ...((query?.search

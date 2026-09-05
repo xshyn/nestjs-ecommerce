@@ -8,16 +8,26 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { ProductsService } from './products.service';
-import { Product } from './products.entity';
 import { Role } from '../../decorators/role.decorator';
 import { Roles } from '../users/types/roles.enum';
 import { RoleGuard } from '../../guards/role.guard';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
+import {
+  type CreateProductDto,
+  createProductSchema,
+} from './schemas/create-product.schema';
+import {
+  type UpdateProductDto,
+  updateProductSchema,
+} from './schemas/update-product.schema';
+import {
+  type ProductsQueryDto,
+  productsQuerySchema,
+} from './schemas/products-query.schema';
 
 @Controller('products')
 export class ProductsController {
@@ -26,13 +36,19 @@ export class ProductsController {
   @Role(Roles.ADMIN)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Post()
-  save(@Body() data: Product) {
-    return this.service.save(data);
+  save(
+    @Body(new ZodValidationPipe(createProductSchema))
+    createProductDto: CreateProductDto,
+  ) {
+    return this.service.save(createProductDto);
   }
 
   @Get()
-  list(@Query() query: any) {
-    return this.service.list({}, query);
+  list(
+    @Query(new ZodValidationPipe(productsQuerySchema))
+    productsQueryDto: ProductsQueryDto,
+  ) {
+    return this.service.list({}, productsQueryDto);
   }
 
   @Get('/:id')
@@ -48,8 +64,12 @@ export class ProductsController {
   @Role(Roles.ADMIN)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Patch('/:id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: Product) {
-    return this.service.update({ id }, data);
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(updateProductSchema))
+    updateProductDto: UpdateProductDto,
+  ) {
+    return this.service.update({ id }, updateProductDto);
   }
 
   @Role(Roles.ADMIN)
