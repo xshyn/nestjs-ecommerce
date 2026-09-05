@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, In, Like, Repository } from 'typeorm';
+import { UserQueryDto } from './schemas/user-query.schema';
 
 @Injectable()
 export class UsersService {
@@ -9,11 +10,26 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
-  findAll() {
-    return this.userRepo.find();
+  find(query: UserQueryDto) {
+    return this.userRepo.find({
+      take: query.limit,
+      skip: query.skip,
+      where: [
+        {
+          ...(query?.id && { id: query.id }),
+          ...(query?.email && { email: query.email }),
+          ...(query?.roles && {
+            roles: Array.isArray(query.roles) ? query.roles : [query.roles],
+          }),
+        } as FindOptionsWhere<User>,
+        ...((query?.search
+          ? [{ email: ILike(`%${query.search}%`) }]
+          : []) as FindOptionsWhere<User>[]),
+      ],
+    });
   }
 
-  findBy(where: FindOptionsWhere<User>) {
+  findOne(where: FindOptionsWhere<User>) {
     return this.userRepo.findOne({ where });
   }
 
