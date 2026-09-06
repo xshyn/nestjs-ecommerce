@@ -6,7 +6,11 @@ export const inventoryQuerySchema = queryBaseSchema
     id: z.uuid().optional(),
     gte: z.coerce.number().int().positive().max(10000).optional(),
     lte: z.coerce.number().int().positive().max(10000).optional(),
-    sort: z.enum(['asc', 'desc']).optional().default('desc'),
+    sort: z
+      .enum(['asc', 'desc'])
+      .optional()
+      .default('desc')
+      .transform((val) => val.toUpperCase()),
   })
   .transform(withSkip)
   .refine((val) => {

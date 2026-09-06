@@ -91,8 +91,7 @@ export class ProductsService {
       take: productsQueryDto?.limit,
       skip: productsQueryDto?.skip,
       order: {
-        createdAt:
-          productsQueryDto?.sort.toUpperCase() as FindOptionsOrderValue,
+        createdAt: productsQueryDto?.sort as FindOptionsOrderValue,
       },
       relations: {
         inventory: true,

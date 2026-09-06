@@ -23,7 +23,7 @@ export class UsersService {
       take: query.limit,
       skip: query.skip,
       order: {
-        createdAt: query.sort.toUpperCase() as FindOptionsOrderValue,
+        createdAt: query.sort as FindOptionsOrderValue,
       },
       where: [
         {

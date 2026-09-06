@@ -33,8 +33,7 @@ export class InventoryService {
       take: inventoryQueryDto?.limit,
       skip: inventoryQueryDto?.skip,
       order: {
-        quantity:
-          inventoryQueryDto?.sort.toUpperCase() as FindOptionsOrderValue,
+        quantity: inventoryQueryDto?.sort as FindOptionsOrderValue,
       },
       relations: { product: true },
       where: {

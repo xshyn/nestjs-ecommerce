@@ -6,7 +6,11 @@ export const productsQuerySchema = queryBaseSchema
     search: z.string().nonempty().optional(),
     isActive: z.stringbool().optional(),
     id: z.uuid().optional(),
-    sort: z.enum(['asc', 'desc']).optional().default('desc'),
+    sort: z
+      .enum(['asc', 'desc'])
+      .optional()
+      .default('desc')
+      .transform((val) => val.toUpperCase()),
   })
   .transform(withSkip);
 

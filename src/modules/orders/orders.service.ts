@@ -7,10 +7,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './orders.entity';
 import { OrderItem } from './order-item.entity';
 import {
+  Between,
   DataSource,
   FindManyOptions,
   FindOneOptions,
   FindOptionsWhere,
+  LessThan,
+  LessThanOrEqual,
+  MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 import { CartsService } from '../carts/carts.service';
@@ -18,6 +22,7 @@ import { Cart } from '../carts/carts.entity';
 import { Inventory } from '../inventory/inventory.entity';
 import { CartItem } from '../carts/cart-items.entity';
 import { OrderStatus } from './orders.type';
+import { OrdersListQueryDto } from './schemas/orders-list-query.schema';
 
 @Injectable()
 export class OrdersService {
@@ -26,15 +31,50 @@ export class OrdersService {
 
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
-
-    @InjectRepository(OrderItem)
-    private readonly orderItemRepo: Repository<OrderItem>,
-
-    private readonly cartService: CartsService,
   ) {}
 
-  findAll(options?: FindManyOptions<Order>) {
-    return this.orderRepo.find(options);
+  findAll(ordersListQueryDto?: OrdersListQueryDto) {
+    const isGteAmount = !!ordersListQueryDto?.gteAmount;
+    const isLteAmount = !!ordersListQueryDto?.lteAmount;
+    const isBetweenAmount = isGteAmount && isLteAmount;
+
+    return this.orderRepo.find({
+      take: ordersListQueryDto?.limit,
+      skip: ordersListQueryDto?.skip,
+      relations: { items: true },
+      order: {
+        [ordersListQueryDto?.sortOption!]: ordersListQueryDto?.sortDir,
+      },
+      select: {
+        items: {
+          productName: true,
+          quantity: true,
+          subtotal: true,
+          unitPrice: true,
+        },
+      },
+      where: {
+        ...(isGteAmount || isLteAmount
+          ? {
+              totalAmount: isBetweenAmount
+                ? Between(
+                    ordersListQueryDto.gteAmount,
+                    ordersListQueryDto.lteAmount,
+                  )
+                : isGteAmount
+                  ? MoreThanOrEqual(ordersListQueryDto.gteAmount)
+                  : LessThanOrEqual(ordersListQueryDto.lteAmount),
+            }
+          : {}),
+        ...(ordersListQueryDto?.id && { id: ordersListQueryDto.id }),
+        ...(ordersListQueryDto?.status && {
+          status: ordersListQueryDto.status,
+        }),
+        ...(ordersListQueryDto?.userId && {
+          userId: ordersListQueryDto.userId,
+        }),
+      } as FindOptionsWhere<Order>,
+    });
   }
 
   findOne(options: FindOneOptions<Order>) {
@@ -97,7 +137,7 @@ export class OrdersService {
         inventory.quantity -= item.quantity;
         await manager.save(Inventory, inventory);
       }
-      savedOrder.totalAmount = totalAmount.toString();
+      savedOrder.totalAmount = totalAmount.toFixed(2);
       await manager.save(Order, savedOrder);
 
       await manager.remove(CartItem, cart.items);
