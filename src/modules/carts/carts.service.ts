@@ -10,6 +10,7 @@ import { CartItem } from './cart-items.entity';
 import { ProductsService } from '../products/products.service';
 import { InventoryService } from '../inventory/inventory.service';
 import { Product } from '../products/products.entity';
+import { AddItemDto } from './schemas/add-item.schema';
 
 @Injectable()
 export class CartsService {
@@ -27,18 +28,18 @@ export class CartsService {
     return cart;
   }
 
-  async addItem(userId: string, data: CartItem) {
+  async addItem(userId: string, addItemDto: AddItemDto) {
     const cart = await this.getOrCreateCart(userId);
 
     const product = (await this.productService.findOne(
-      { where: { id: data.productId }, relations: { inventory: true } },
+      { where: { id: addItemDto.productId }, relations: { inventory: true } },
       true,
     )) as Product;
 
-    await this.inventoryService.checkAvailability(product, data.quantity);
+    await this.inventoryService.checkAvailability(product, addItemDto.quantity);
 
-    const item = await this.getOrCreateCartItem(cart.id, data.productId);
-    item.quantity = data.quantity;
+    const item = await this.getOrCreateCartItem(cart.id, addItemDto.productId);
+    item.quantity = addItemDto.quantity;
     const savedItem = await this.cartItemRepo.save(item);
     return savedItem;
   }

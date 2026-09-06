@@ -5,6 +5,7 @@ import {
   DataSource,
   FindOneOptions,
   FindOptionsOrderValue,
+  FindOptionsRelations,
   FindOptionsWhere,
   ILike,
   Repository,
@@ -92,6 +93,9 @@ export class ProductsService {
       order: {
         createdAt:
           productsQueryDto?.sort.toUpperCase() as FindOptionsOrderValue,
+      },
+      relations: {
+        inventory: true,
       },
       where: [
         ...(productFieldsQuery ? [productFieldsQuery] : []),

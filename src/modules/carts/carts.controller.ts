@@ -13,7 +13,12 @@ import {
 import { CartsService } from './carts.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { Payload } from '../../types/payload.interface';
-import { CartItem } from './cart-items.entity';
+import {
+  type UpdateCartQuantityDto,
+  updateCartQuantitySchema,
+} from './schemas/update-cart-quantity.schema';
+import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
+import { type AddItemDto, addItemSchema } from './schemas/add-item.schema';
 
 @UseGuards(JwtAuthGuard)
 @Controller('carts')
@@ -29,20 +34,24 @@ export class CartsController {
   }
 
   @Post('items')
-  addItem(@Body() data: CartItem, @Request() { user }: { user: Payload }) {
-    return this.service.addItem(user.userId, data);
+  addItem(
+    @Body(new ZodValidationPipe(addItemSchema)) addItemDto: AddItemDto,
+    @Request() { user }: { user: Payload },
+  ) {
+    return this.service.addItem(user.userId, addItemDto);
   }
 
   @Patch('items/:productId')
   updateItem(
     @Request() { user }: { user: Payload },
     @Param('productId', ParseUUIDPipe) productId: string,
-    @Body() data: CartItem,
+    @Body(new ZodValidationPipe(updateCartQuantitySchema))
+    updateCartQuantityDto: UpdateCartQuantityDto,
   ) {
     return this.service.updateItemQuantity(
       user.userId,
       productId,
-      data.quantity,
+      updateCartQuantityDto.quantity,
     );
   }
 
