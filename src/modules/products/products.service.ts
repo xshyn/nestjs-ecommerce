@@ -3,12 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './products.entity';
 import {
   DataSource,
-  FindManyOptions,
   FindOneOptions,
+  FindOptionsOrderValue,
   FindOptionsWhere,
   ILike,
-  JsonContains,
-  QueryDeepPartialEntity,
   Repository,
 } from 'typeorm';
 import { Inventory } from '../inventory/inventory.entity';
@@ -74,6 +72,7 @@ export class ProductsService {
       ...(searchExists && {
         search: productsQueryDto.search!.trim(),
       }),
+      sort: productsQueryDto?.sort,
     });
 
     const cacheVersion = await this.cacheService.getVersion(
@@ -90,6 +89,10 @@ export class ProductsService {
     const products = await this.productRepo.find({
       take: productsQueryDto?.limit,
       skip: productsQueryDto?.skip,
+      order: {
+        createdAt:
+          productsQueryDto?.sort.toUpperCase() as FindOptionsOrderValue,
+      },
       where: [
         ...(productFieldsQuery ? [productFieldsQuery] : []),
         ...(searchExists

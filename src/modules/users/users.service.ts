@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import {
-  Any,
-  ArrayContains,
   ArrayOverlap,
+  FindOptionsOrderValue,
   FindOptionsWhere,
   ILike,
   In,
@@ -23,6 +22,9 @@ export class UsersService {
     return this.userRepo.find({
       take: query.limit,
       skip: query.skip,
+      order: {
+        createdAt: query.sort.toUpperCase() as FindOptionsOrderValue,
+      },
       where: [
         {
           ...(query?.id && { id: query.id }),

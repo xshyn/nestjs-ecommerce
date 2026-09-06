@@ -7,6 +7,8 @@ export const userQuerySchema = queryBaseSchema
     id: z.uuid().optional(),
     email: z.email().optional(),
     roles: z.array(z.enum(Roles)).or(z.enum(Roles)).optional(),
+    search: z.string().nonempty().optional(),
+    sort: z.enum(['asc', 'desc']).optional().default('desc'),
   })
   .transform(withSkip);
 
