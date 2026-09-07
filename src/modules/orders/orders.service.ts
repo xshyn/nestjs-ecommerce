@@ -9,15 +9,12 @@ import { OrderItem } from './order-item.entity';
 import {
   Between,
   DataSource,
-  FindManyOptions,
   FindOneOptions,
   FindOptionsWhere,
-  LessThan,
   LessThanOrEqual,
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
-import { CartsService } from '../carts/carts.service';
 import { Cart } from '../carts/carts.entity';
 import { Inventory } from '../inventory/inventory.entity';
 import { CartItem } from '../carts/cart-items.entity';
