@@ -1,32 +1,92 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
-  Request,
+  Req,
+  Res,
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { User } from '../users/users.entity';
 import { LocalAuthGuard } from '../../guards/local-auth.guard';
-import { Payload } from '../../types/payload.interface';
+import {
+  AccessPayload,
+  Payload,
+  RefreshPayload,
+} from '../../types/payload.interface';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import { type SignupDto, signupSchema } from './schemas/signup.schema';
+import { type Request, type Response } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { TokenTtl } from './types/token-ttl.enum';
+import { RefreshJwtAuthGuard } from '../../guards/refresh-jwt-auth.guard';
+import { LocalPayload } from './types/local-payload.interface';
+import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
-  @Post('/user/signup')
+  constructor(
+    private readonly service: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
+  @Post('signup')
   userSignup(@Body(new ZodValidationPipe(signupSchema)) signupDto: SignupDto) {
     return this.service.signup(signupDto);
   }
   @HttpCode(HttpStatus.OK)
   // validation inside guard
   @UseGuards(LocalAuthGuard)
-  @Post('/user/login')
-  userLogin(@Request() req: { user: Payload }) {
-    return this.service.login(req.user);
+  @Post('login')
+  async userLogin(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = await this.service.login(req.user as LocalPayload);
+
+    res.cookie('refresh', tokens.refresh, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'strict',
+      maxAge: TokenTtl.REFRESH * 1000,
+    });
+
+    return { access: tokens.access };
+  }
+
+  @UseGuards(RefreshJwtAuthGuard)
+  @Post('refresh')
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const payload = req.user as RefreshPayload;
+
+    const tokens = await this.service.refresh(payload);
+
+    res.cookie('refresh', tokens.refresh, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'strict',
+      maxAge: TokenTtl.REFRESH * 1000,
+    });
+
+    return { access: tokens.access };
+  }
+
+  @UseGuards(AccessJwtAuthGuard)
+  @Post('logout')
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const accessPayload = req.user as AccessPayload;
+
+    await this.service.logout(accessPayload, req.cookies.refreshToken);
+
+    res.clearCookie('refreshToken');
+
+    return {
+      message: 'Logged out successfully',
+    };
   }
 }

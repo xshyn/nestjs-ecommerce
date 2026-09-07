@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Request, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { Payload } from '../../types/payload.interface';
 import { Role } from '../../decorators/role.decorator';
 import { Roles } from './types/roles.enum';
@@ -11,7 +11,7 @@ import {
   userQuerySchema,
 } from './schemas/user-query.schema';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(AccessJwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly service: UsersService) {}

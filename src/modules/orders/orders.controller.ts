@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { Role } from '../../decorators/role.decorator';
 import { Roles } from '../users/types/roles.enum';
 import { RoleGuard } from '../../guards/role.guard';
@@ -31,7 +31,7 @@ import {
   updateOrderStatusSchema,
 } from './schemas/update-order-status.schema';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(AccessJwtAuthGuard)
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly service: OrdersService) {}

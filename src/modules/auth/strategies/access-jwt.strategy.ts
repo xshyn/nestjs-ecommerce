@@ -1,0 +1,39 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, ExtractJwt } from 'passport-jwt';
+import { AccessPayload } from '../../../types/payload.interface';
+import { TokenType } from '../types/token-type.enum';
+import { AuthService } from '../auth.service';
+
+@Injectable()
+export class AccessJwtStrategy extends PassportStrategy(
+  Strategy,
+  'access-jwt',
+) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
+  ) {
+    // TODO must change later
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: configService.getOrThrow<string>('JWT-SECRET-ACCESS'),
+    });
+  }
+  async validate(payload: AccessPayload) {
+    if (payload.type !== TokenType.ACCESS) {
+      throw new UnauthorizedException();
+    }
+
+    const isRevoked = await this.authService.exists(
+      payload.jti,
+      'blacklist',
+    );
+
+    if (isRevoked) throw new UnauthorizedException();
+
+    return payload;
+  }
+}

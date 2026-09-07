@@ -1,37 +1,72 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
-import { User } from '../users/users.entity';
-import { JwtService } from '@nestjs/jwt';
-import { Payload } from '../../types/payload.interface';
+import { AccessPayload, RefreshPayload } from '../../types/payload.interface';
 import { SignupDto } from './schemas/signup.schema';
+import { CacheService } from '../cache/cache.service';
+import { CacheKeys } from '../cache/cache.keys';
+import { Roles } from '../users/types/roles.enum';
+import { TokenService } from './token.service';
+import { LocalPayload } from './types/local-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UsersService,
-    private readonly jwtService: JwtService,
+    private readonly cache: CacheService,
+    private readonly tokenService: TokenService,
   ) {}
-  async login(user: Payload) {
-    const payload: Payload = {
-      email: user.email,
-      userId: user.userId,
-      roles: user.roles,
-    };
-    const access_token = this.jwtService.sign(payload);
-    return { access_token };
+  async login(user: LocalPayload) {
+    const access = await this.tokenService.generateAccess(user);
+    const refresh = await this.tokenService.generateRefresh(user);
+
+    await this.createRefreshCache(
+      refresh.refreshPayload.jti,
+      user,
+      refresh.refreshPayload.exp,
+    );
+
+    return { access: access.token, refresh: refresh.token };
   }
   async signup(signupDto: SignupDto) {
     return this.userService.create({
       email: signupDto.email,
       password: this.hashPass(signupDto.password),
     });
+  }
+  async refresh(payload: RefreshPayload) {
+    await this.revokeTokenFromRefresh(payload.jti);
+
+    const access = await this.tokenService.generateAccess({
+      userId: payload.userId,
+      roles: payload.roles,
+    });
+    const refresh = await this.tokenService.generateRefresh({
+      userId: payload.userId,
+      roles: payload.roles,
+    });
+
+    await this.createRefreshCache(
+      payload.jti,
+      {
+        userId: payload.userId,
+        roles: payload.roles,
+      },
+      payload.exp,
+    );
+
+    return {
+      access,
+      refresh,
+    };
+  }
+  async logout(accessPayload: AccessPayload, refresh: string) {
+    await this.revokeTokenFromBlacklist(accessPayload.jti, accessPayload.exp);
+
+    try {
+      const refreshPayload = await this.tokenService.verifyRefresh(refresh);
+      await this.revokeTokenFromRefresh(refreshPayload.jti);
+    } catch {}
   }
   async validateUser(email: string, password: string) {
     const user = await this.userService.findOne({ email: email }, true);
@@ -45,5 +80,45 @@ export class AuthService {
   }
   private comparePass(password: string, hashedPass: string) {
     return bcrypt.compareSync(password, hashedPass);
+  }
+
+  async revokeTokenFromBlacklist(jti: string, exp: number) {
+    const ttl = this.extractTtl(exp);
+    if (ttl <= 0) return;
+
+    await this.cache.set(CacheKeys.blacklist(jti), '1', ttl);
+  }
+
+  async revokeTokenFromRefresh(jti: string) {
+    await this.cache.delete(CacheKeys.refresh(jti));
+  }
+
+  async createRefreshCache(
+    jti: string,
+    payload: { userId: string; roles: Roles[] },
+    exp: number,
+  ) {
+    const ttl = this.extractTtl(exp);
+
+    await this.cache.set(
+      CacheKeys.refresh(jti),
+      {
+        userId: payload.userId,
+        roles: payload.roles,
+        jti,
+      },
+      ttl,
+    );
+  }
+
+  exists(jti: string, type: 'refresh' | 'blacklist') {
+    return this.cache.exists(
+      type === 'blacklist' ? CacheKeys.blacklist(jti) : CacheKeys.refresh(jti),
+    );
+  }
+
+  private extractTtl(exp: number) {
+    const now = Math.floor(Date.now() / 1000);
+    return exp - now;
   }
 }

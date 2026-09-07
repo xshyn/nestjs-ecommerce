@@ -14,7 +14,7 @@ import { ProductsService } from './products.service';
 import { Role } from '../../decorators/role.decorator';
 import { Roles } from '../users/types/roles.enum';
 import { RoleGuard } from '../../guards/role.guard';
-import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import {
   type CreateProductDto,
@@ -34,7 +34,7 @@ export class ProductsController {
   constructor(private readonly service: ProductsService) {}
 
   @Role(Roles.ADMIN)
-  @UseGuards(JwtAuthGuard, RoleGuard)
+  @UseGuards(AccessJwtAuthGuard, RoleGuard)
   @Post()
   save(
     @Body(new ZodValidationPipe(createProductSchema))
@@ -62,7 +62,7 @@ export class ProductsController {
   }
 
   @Role(Roles.ADMIN)
-  @UseGuards(JwtAuthGuard, RoleGuard)
+  @UseGuards(AccessJwtAuthGuard, RoleGuard)
   @Patch('/:id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -73,7 +73,7 @@ export class ProductsController {
   }
 
   @Role(Roles.ADMIN)
-  @UseGuards(JwtAuthGuard, RoleGuard)
+  @UseGuards(AccessJwtAuthGuard, RoleGuard)
   @Delete('/:id')
   delete(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.delete({ id });

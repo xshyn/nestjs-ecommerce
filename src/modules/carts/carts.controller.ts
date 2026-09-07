@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CartsService } from './carts.service';
-import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { Payload } from '../../types/payload.interface';
 import {
   type UpdateCartQuantityDto,
@@ -20,7 +20,7 @@ import {
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import { type AddItemDto, addItemSchema } from './schemas/add-item.schema';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(AccessJwtAuthGuard)
 @Controller('carts')
 export class CartsController {
   constructor(private readonly service: CartsService) {}
