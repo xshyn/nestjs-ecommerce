@@ -44,7 +44,13 @@ export class UsersService {
     });
   }
 
-  findOne(where: FindOptionsWhere<User>) {
+  findOne(where: FindOptionsWhere<User>, withPassword = false) {
+    if (withPassword)
+      return this.userRepo
+        .createQueryBuilder('users')
+        .addSelect('users.password')
+        .where(where)
+        .getOne();
     return this.userRepo.findOne({ where });
   }
 

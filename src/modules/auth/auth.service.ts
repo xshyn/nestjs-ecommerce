@@ -34,7 +34,7 @@ export class AuthService {
     });
   }
   async validateUser(email: string, password: string) {
-    const user = await this.userService.findOne({ email: email });
+    const user = await this.userService.findOne({ email: email }, true);
     if (!user || !this.comparePass(password, user?.password)) return null;
     return user;
   }
