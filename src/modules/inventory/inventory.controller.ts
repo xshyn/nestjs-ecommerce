@@ -17,14 +17,15 @@ import { Roles } from '../users/types/roles.enum';
 import { RoleGuard } from '../../guards/role.guard';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import {
-  type UpdateInventoryDto,
+  UpdateInventoryDto,
   updateInventorySchema,
 } from './schemas/update-inventory.schema';
 import {
-  type InventoryQueryDto,
+  InventoryQueryDto,
   inventoryQuerySchema,
 } from './schemas/inventory-query.schema';
 import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('inventory')
 export class InventoryController {
@@ -32,6 +33,7 @@ export class InventoryController {
 
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
+  @ApiBearerAuth()
   @UseInterceptors(ResponseEnvelopeInterceptor<Inventory>)
   @Get()
   find(
@@ -48,6 +50,7 @@ export class InventoryController {
 
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
+  @ApiBearerAuth()
   @Patch(':productId')
   update(
     @Param('productId', ParseUUIDPipe) productId: string,

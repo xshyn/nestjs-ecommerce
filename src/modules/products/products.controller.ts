@@ -18,19 +18,20 @@ import { RoleGuard } from '../../guards/role.guard';
 import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import {
-  type CreateProductDto,
+  CreateProductDto,
   createProductSchema,
 } from './schemas/create-product.schema';
 import {
-  type UpdateProductDto,
+  UpdateProductDto,
   updateProductSchema,
 } from './schemas/update-product.schema';
 import {
-  type ProductsQueryDto,
+  ProductsQueryDto,
   productsQuerySchema,
 } from './schemas/products-query.schema';
 import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
 import { Product } from './products.entity';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('products')
 export class ProductsController {
@@ -38,6 +39,7 @@ export class ProductsController {
 
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
+  @ApiBearerAuth()
   @Post()
   save(
     @Body(new ZodValidationPipe(createProductSchema))
@@ -67,6 +69,7 @@ export class ProductsController {
 
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
+  @ApiBearerAuth()
   @Patch('/:id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -78,6 +81,7 @@ export class ProductsController {
 
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
+  @ApiBearerAuth()
   @Delete('/:id')
   delete(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.delete({ id });

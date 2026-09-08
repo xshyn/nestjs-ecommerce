@@ -3,6 +3,7 @@ import { queryBaseSchema } from '../../../schemas/query.schema';
 import { OrderStatus } from '../orders.type';
 import { SortDirections } from '../../../types/sort-directions.type';
 import { SortOrderOptions } from '../types/sort-order-options.type';
+import { createZodDto } from 'nestjs-zod';
 
 export const ordersQueryBaseSchema = queryBaseSchema
   .extend({
@@ -20,4 +21,4 @@ export const ordersQueryBaseSchema = queryBaseSchema
     val?.lteAmount && val?.gteAmount ? val.lteAmount >= val.gteAmount : true,
   );
 
-export type OrdersQueryBaseDto = z.infer<typeof ordersQueryBaseSchema>;
+export class OrdersQueryBaseDto extends createZodDto(ordersQueryBaseSchema) {}

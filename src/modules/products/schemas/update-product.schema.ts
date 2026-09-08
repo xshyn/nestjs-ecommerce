@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { Product } from '../products.entity';
 import { createProductSchema } from './create-product.schema';
+import { createZodDto } from 'nestjs-zod';
 
 export const updateProductSchema = createProductSchema
   .omit({ quantity: true })
-  .partial()
+  .partial();
 
-export type UpdateProductDto = z.infer<typeof updateProductSchema>;
+export class UpdateProductDto extends createZodDto(updateProductSchema) {}

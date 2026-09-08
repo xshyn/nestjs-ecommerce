@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { queryBaseSchema, withSkip } from '../../../schemas/query.schema';
 import { Roles } from '../types/roles.enum';
 import { SortDirections } from '../../../types/sort-directions.type';
+import { createZodDto } from 'nestjs-zod';
 
 export const userQuerySchema = queryBaseSchema
   .extend({
@@ -17,4 +18,4 @@ export const userQuerySchema = queryBaseSchema
   })
   .transform(withSkip);
 
-export type UserQueryDto = z.infer<typeof userQuerySchema>;
+export class UserQueryDto extends createZodDto(userQuerySchema) {}

@@ -17,24 +17,25 @@ import { Role } from '../../decorators/role.decorator';
 import { Roles } from '../users/types/roles.enum';
 import { RoleGuard } from '../../guards/role.guard';
 import { Payload } from '../../types/payload.interface';
-import { OrderStatus } from './orders.type';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import {
-  type OrdersListQueryDto,
+  OrdersListQueryDto,
   ordersListQuerySchema,
 } from './schemas/orders-list-query.schema';
 import {
-  type UserOrdersListQueryDto,
+  UserOrdersListQueryDto,
   userOrderslistQuerySchema,
 } from './schemas/user-orders-list-query.schema';
 import {
-  type UpdateOrderStatusDto,
+  UpdateOrderStatusDto,
   updateOrderStatusSchema,
 } from './schemas/update-order-status.schema';
 import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
 import { Order } from './orders.entity';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(AccessJwtAuthGuard)
+@ApiBearerAuth()
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly service: OrdersService) {}

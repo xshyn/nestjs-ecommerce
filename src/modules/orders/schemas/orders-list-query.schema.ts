@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ordersQueryBaseSchema } from './orders-query-base.schema';
 import { withSkip } from '../../../schemas/query.schema';
+import { createZodDto } from 'nestjs-zod';
 
 export const ordersListQuerySchema = ordersQueryBaseSchema
   .extend({
@@ -8,4 +9,4 @@ export const ordersListQuerySchema = ordersQueryBaseSchema
   })
   .transform(withSkip);
 
-export type OrdersListQueryDto = z.infer<typeof ordersListQuerySchema>;
+export class OrdersListQueryDto extends createZodDto(ordersListQuerySchema) {}

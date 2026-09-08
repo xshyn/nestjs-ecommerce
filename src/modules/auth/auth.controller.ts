@@ -18,7 +18,7 @@ import {
   RefreshPayload,
 } from '../../types/payload.interface';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
-import { type SignupDto, signupSchema } from './schemas/signup.schema';
+import { SignupDto, signupSchema } from './schemas/signup.schema';
 import { type Request, type Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { TokenTtl } from './types/token-ttl.enum';
@@ -27,6 +27,8 @@ import { LocalPayload } from './types/local-payload.interface';
 import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { AccessRefreshJwtAuthGuard } from '../../guards/access-refresh-jwt-auth.guard';
 import { generateCsrfToken } from '../csrf/csrf.config';
+import { ApiBody } from '@nestjs/swagger';
+import { LoginDto } from './schemas/login.schema';
 
 @Controller('auth')
 export class AuthController {
@@ -41,6 +43,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   // validation inside guard
   @UseGuards(LocalAuthGuard)
+  @ApiBody({ type: LoginDto })
   @Post('login')
   async userLogin(
     @Req() req: Request,

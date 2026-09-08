@@ -13,18 +13,17 @@ import { Role } from '../../decorators/role.decorator';
 import { Roles } from './types/roles.enum';
 import { RoleGuard } from '../../guards/role.guard';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
-import {
-  type UserQueryDto,
-  userQuerySchema,
-} from './schemas/user-query.schema';
+import { UserQueryDto, userQuerySchema } from './schemas/user-query.schema';
 import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
 import { User } from './users.entity';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(AccessJwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly service: UsersService) {}
 
+  @ApiBearerAuth()
   @Role(Roles.ADMIN)
   @UseGuards(RoleGuard)
   @UseInterceptors(ResponseEnvelopeInterceptor<User>)
@@ -33,6 +32,7 @@ export class UsersController {
     return this.service.find(query);
   }
 
+  @ApiBearerAuth()
   @Get('/me')
   profile(@Request() req: { user: Payload }) {
     return this.service.findOne({ id: req.user.userId });

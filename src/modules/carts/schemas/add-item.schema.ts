@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const addItemSchema = z.object({
@@ -5,4 +6,4 @@ export const addItemSchema = z.object({
   quantity: z.coerce.number().int().min(1).max(10000),
 });
 
-export type AddItemDto = z.infer<typeof addItemSchema>;
+export class AddItemDto extends createZodDto(addItemSchema){}

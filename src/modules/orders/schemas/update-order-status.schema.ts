@@ -1,8 +1,10 @@
 import { z } from 'zod';
 import { OrderStatus } from '../orders.type';
+import { createZodDto } from 'nestjs-zod';
 
 export const updateOrderStatusSchema = z.object({
   status: z.enum(OrderStatus),
 });
 
-export type UpdateOrderStatusDto = z.infer<typeof updateOrderStatusSchema>;
+
+export class UpdateOrderStatusDto extends createZodDto(updateOrderStatusSchema) {}

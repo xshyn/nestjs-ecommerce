@@ -14,13 +14,15 @@ import { CartsService } from './carts.service';
 import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { Payload } from '../../types/payload.interface';
 import {
-  type UpdateCartQuantityDto,
+  UpdateCartQuantityDto,
   updateCartQuantitySchema,
 } from './schemas/update-cart-quantity.schema';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
-import { type AddItemDto, addItemSchema } from './schemas/add-item.schema';
+import { AddItemDto, addItemSchema } from './schemas/add-item.schema';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(AccessJwtAuthGuard)
+@ApiBearerAuth()
 @Controller('carts')
 export class CartsController {
   constructor(private readonly service: CartsService) {}

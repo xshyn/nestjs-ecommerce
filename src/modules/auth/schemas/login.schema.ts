@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { signupSchema } from './signup.schema';
+import { createZodDto } from 'nestjs-zod';
 
 export const loginSchema = signupSchema.extend({});
 
-export type LoginDto = z.infer<typeof loginSchema>;
+export class LoginDto extends createZodDto(loginSchema) {}
