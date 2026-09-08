@@ -35,7 +35,7 @@ export class AuthService {
     });
   }
   async refresh(payload: RefreshPayload) {
-    await this.revokeTokenFromRefresh(payload.jti);
+    await this.revokeTokenFromRefreshCache(payload.jti);
 
     const access = await this.tokenService.generateAccess({
       userId: payload.userId,
@@ -57,15 +57,18 @@ export class AuthService {
 
     return {
       access,
-      refresh,
+      refresh
     };
   }
   async logout(accessPayload: AccessPayload, refresh: string) {
-    await this.revokeTokenFromBlacklist(accessPayload.jti, accessPayload.exp);
+    await this.revokeTokenFromBlacklistCache(
+      accessPayload.jti,
+      accessPayload.exp,
+    );
 
     try {
       const refreshPayload = await this.tokenService.verifyRefresh(refresh);
-      await this.revokeTokenFromRefresh(refreshPayload.jti);
+      await this.revokeTokenFromRefreshCache(refreshPayload.jti);
     } catch {}
   }
   async validateUser(email: string, password: string) {
@@ -82,14 +85,14 @@ export class AuthService {
     return bcrypt.compareSync(password, hashedPass);
   }
 
-  async revokeTokenFromBlacklist(jti: string, exp: number) {
+  async revokeTokenFromBlacklistCache(jti: string, exp: number) {
     const ttl = this.extractTtl(exp);
     if (ttl <= 0) return;
 
     await this.cache.set(CacheKeys.blacklist(jti), '1', ttl);
   }
 
-  async revokeTokenFromRefresh(jti: string) {
+  async revokeTokenFromRefreshCache(jti: string) {
     await this.cache.delete(CacheKeys.refresh(jti));
   }
 
@@ -111,7 +114,7 @@ export class AuthService {
     );
   }
 
-  exists(jti: string, type: 'refresh' | 'blacklist') {
+  existsInCache(jti: string, type: 'refresh' | 'blacklist') {
     return this.cache.exists(
       type === 'blacklist' ? CacheKeys.blacklist(jti) : CacheKeys.refresh(jti),
     );

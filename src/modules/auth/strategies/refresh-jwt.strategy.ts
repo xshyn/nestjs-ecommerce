@@ -22,7 +22,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
         return req.cookies?.refresh ?? null;
       },
       ignoreExpiration: false,
-      secretOrKey: configService.getOrThrow<string>('JWT-SECRET-REFRESH'),
+      secretOrKey: configService.getOrThrow<string>('JWT_SECRET_REFRESH'),
     });
   }
   async validate(payload: RefreshPayload) {
@@ -30,7 +30,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
       throw new UnauthorizedException();
     }
 
-    const exists = await this.authService.exists(payload.jti, 'refresh');
+    const exists = await this.authService.existsInCache(payload.jti, 'refresh');
     if (!exists) throw new UnauthorizedException();
 
     return payload;

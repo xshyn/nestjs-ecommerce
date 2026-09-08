@@ -27,7 +27,7 @@ export class TokenService {
       exp: now + TokenTtl.ACCESS,
     };
 
-    const token = await this.jwtService.signAsync(payload, {
+    const token = await this.jwtService.signAsync(accessPayload, {
       secret: this.configService.getOrThrow<string>('JWT_SECRET_ACCESS'),
     });
 
@@ -47,10 +47,10 @@ export class TokenService {
       type: TokenType.REFRESH,
       jti,
       iat: now,
-      exp: now + TokenTtl.ACCESS,
+      exp: now + TokenTtl.REFRESH,
     };
 
-    const token = await this.jwtService.signAsync(payload, {
+    const token = await this.jwtService.signAsync(refreshPayload, {
       secret: this.configService.getOrThrow<string>('JWT_SECRET_REFRESH'),
     });
 

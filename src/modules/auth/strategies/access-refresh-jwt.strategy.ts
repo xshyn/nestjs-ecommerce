@@ -7,9 +7,9 @@ import { TokenType } from '../types/token-type.enum';
 import { AuthService } from '../auth.service';
 
 @Injectable()
-export class AccessJwtStrategy extends PassportStrategy(
+export class AccessRefreshJwtStrategy extends PassportStrategy(
   Strategy,
-  'access-jwt',
+  'access-refresh-jwt',
 ) {
   constructor(
     private readonly configService: ConfigService,
@@ -17,7 +17,7 @@ export class AccessJwtStrategy extends PassportStrategy(
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
+      ignoreExpiration: true,
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET_ACCESS'),
     });
   }
@@ -26,9 +26,16 @@ export class AccessJwtStrategy extends PassportStrategy(
       throw new UnauthorizedException();
     }
 
-    const isRevoked = await this.authService.existsInCache(payload.jti, 'blacklist');
+    const isRevoked = await this.authService.existsInCache(
+      payload.jti,
+      'blacklist',
+    );
 
-    if (isRevoked) throw new UnauthorizedException();
+    if (!isRevoked)
+      await this.authService.revokeTokenFromBlacklistCache(
+        payload.jti,
+        payload.exp,
+      );
 
     return payload;
   }

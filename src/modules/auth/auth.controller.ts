@@ -25,6 +25,7 @@ import { TokenTtl } from './types/token-ttl.enum';
 import { RefreshJwtAuthGuard } from '../../guards/refresh-jwt-auth.guard';
 import { LocalPayload } from './types/local-payload.interface';
 import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
+import { AccessRefreshJwtAuthGuard } from '../../guards/access-refresh-jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -56,7 +57,7 @@ export class AuthController {
     return { access: tokens.access };
   }
 
-  @UseGuards(RefreshJwtAuthGuard)
+  @UseGuards(AccessRefreshJwtAuthGuard, RefreshJwtAuthGuard)
   @Post('refresh')
   async refresh(
     @Req() req: Request,
@@ -73,7 +74,7 @@ export class AuthController {
       maxAge: TokenTtl.REFRESH * 1000,
     });
 
-    return { access: tokens.access };
+    return { access: tokens.access.token };
   }
 
   @UseGuards(AccessJwtAuthGuard)
@@ -81,9 +82,9 @@ export class AuthController {
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const accessPayload = req.user as AccessPayload;
 
-    await this.service.logout(accessPayload, req.cookies.refreshToken);
+    await this.service.logout(accessPayload, req.cookies.refresh);
 
-    res.clearCookie('refreshToken');
+    res.clearCookie('refresh');
 
     return {
       message: 'Logged out successfully',
