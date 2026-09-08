@@ -7,7 +7,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
     const req = ctx.switchToHttp().getRequest();
     // body validation
     try {
-      const result = loginSchema.parse(req.body);
+      loginSchema.parse(req.body);
     } catch (error) {
       throw new BadRequestException('Validation failed');
     }

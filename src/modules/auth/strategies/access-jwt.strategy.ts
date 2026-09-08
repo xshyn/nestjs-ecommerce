@@ -26,7 +26,10 @@ export class AccessJwtStrategy extends PassportStrategy(
       throw new UnauthorizedException();
     }
 
-    const isRevoked = await this.authService.existsInCache(payload.jti, 'blacklist');
+    const isRevoked = await this.authService.existsInCache(
+      payload.jti,
+      'blacklist',
+    );
 
     if (isRevoked) throw new UnauthorizedException();
 

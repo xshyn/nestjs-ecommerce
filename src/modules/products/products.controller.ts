@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Role } from '../../decorators/role.decorator';
@@ -28,6 +29,8 @@ import {
   type ProductsQueryDto,
   productsQuerySchema,
 } from './schemas/products-query.schema';
+import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
+import { Product } from './products.entity';
 
 @Controller('products')
 export class ProductsController {
@@ -43,6 +46,7 @@ export class ProductsController {
     return this.service.save(createProductDto);
   }
 
+  @UseInterceptors(ResponseEnvelopeInterceptor<Product>)
   @Get()
   list(
     @Query(new ZodValidationPipe(productsQuerySchema))

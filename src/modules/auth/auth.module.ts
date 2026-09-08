@@ -20,7 +20,6 @@ import { doubleCsrfProtection } from '../csrf/csrf.config';
   imports: [
     UsersModule,
     PassportModule,
-    // TODO change this later
     JwtModule.register({
       verifyOptions: {
         complete: true,

@@ -9,6 +9,7 @@ import {
   Query,
   Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
@@ -30,12 +31,15 @@ import {
   type UpdateOrderStatusDto,
   updateOrderStatusSchema,
 } from './schemas/update-order-status.schema';
+import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
+import { Order } from './orders.entity';
 
 @UseGuards(AccessJwtAuthGuard)
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly service: OrdersService) {}
 
+  @UseInterceptors(ResponseEnvelopeInterceptor<Order>)
   @Get()
   findUserOrders(
     @Request() { user }: { user: Payload },
@@ -47,6 +51,7 @@ export class OrdersController {
 
   @Role(Roles.ADMIN)
   @UseGuards(RoleGuard)
+  @UseInterceptors(ResponseEnvelopeInterceptor<Order>)
   @Get('list')
   findAll(
     @Query(new ZodValidationPipe(ordersListQuerySchema))

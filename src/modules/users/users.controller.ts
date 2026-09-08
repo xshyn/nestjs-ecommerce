@@ -1,4 +1,11 @@
-import { Controller, Get, Query, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Request,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { Payload } from '../../types/payload.interface';
@@ -10,6 +17,8 @@ import {
   type UserQueryDto,
   userQuerySchema,
 } from './schemas/user-query.schema';
+import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
+import { User } from './users.entity';
 
 @UseGuards(AccessJwtAuthGuard)
 @Controller('users')
@@ -18,6 +27,7 @@ export class UsersController {
 
   @Role(Roles.ADMIN)
   @UseGuards(RoleGuard)
+  @UseInterceptors(ResponseEnvelopeInterceptor<User>)
   @Get()
   findAll(@Query(new ZodValidationPipe(userQuerySchema)) query: UserQueryDto) {
     return this.service.find(query);

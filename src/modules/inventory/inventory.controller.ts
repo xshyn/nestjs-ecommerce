@@ -7,6 +7,7 @@ import {
   Patch,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { Inventory } from './inventory.entity';
@@ -23,6 +24,7 @@ import {
   type InventoryQueryDto,
   inventoryQuerySchema,
 } from './schemas/inventory-query.schema';
+import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
 
 @Controller('inventory')
 export class InventoryController {
@@ -30,6 +32,7 @@ export class InventoryController {
 
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
+  @UseInterceptors(ResponseEnvelopeInterceptor<Inventory>)
   @Get()
   find(
     @Query(new ZodValidationPipe(inventoryQuerySchema))
