@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../../users/users.service';
 import * as bcrypt from 'bcrypt';
-import { AccessPayload, RefreshPayload } from '../../types/payload.interface';
-import { SignupDto } from './schemas/signup.schema';
-import { CacheService } from '../cache/cache.service';
-import { CacheKeys } from '../cache/cache.keys';
-import { Roles } from '../users/types/roles.enum';
-import { TokenService } from './token.service';
-import { LocalPayload } from './types/local-payload.interface';
+import { AccessPayload, RefreshPayload } from '../../../types/payload.interface';
+import { SignupDto } from '../schemas/signup.schema';
+import { CacheService } from '../../cache/cache.service';
+import { CacheKeys } from '../../cache/cache.keys';
+import { Roles } from '../../users/types/roles.enum';
+import { TokenService } from '../services/token.service';
+import { LocalPayload } from '../types/local-payload.interface';
 
 @Injectable()
 export class AuthService {

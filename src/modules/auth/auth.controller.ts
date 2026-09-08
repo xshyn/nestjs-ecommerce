@@ -10,7 +10,7 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 import { LocalAuthGuard } from '../../guards/local-auth.guard';
 import {
   AccessPayload,
@@ -26,6 +26,7 @@ import { RefreshJwtAuthGuard } from '../../guards/refresh-jwt-auth.guard';
 import { LocalPayload } from './types/local-payload.interface';
 import { AccessJwtAuthGuard } from '../../guards/access-jwt-auth.guard';
 import { AccessRefreshJwtAuthGuard } from '../../guards/access-refresh-jwt-auth.guard';
+import { generateCsrfToken } from '../csrf/csrf.config';
 
 @Controller('auth')
 export class AuthController {
@@ -67,7 +68,7 @@ export class AuthController {
 
     const tokens = await this.service.refresh(payload);
 
-    res.cookie('refresh', tokens.refresh, {
+    res.cookie('refresh', tokens.refresh.token, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
       sameSite: 'strict',
@@ -89,5 +90,10 @@ export class AuthController {
     return {
       message: 'Logged out successfully',
     };
+  }
+
+  @Get('csrf-token')
+  csrfToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return generateCsrfToken(req, res, { overwrite: true });
   }
 }
