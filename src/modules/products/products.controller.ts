@@ -31,15 +31,32 @@ import {
 } from './schemas/products-query.schema';
 import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
 import { Product } from './products.entity';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiOperation,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { UnauthorizedResponse } from '../../responses/unauthorized.response';
+import { ValidationFailedResponse } from '../../responses/validation-failed.response';
+import { ForbiddenResponse } from '../../responses/forbidden.response';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly service: ProductsService) {}
 
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Create product',
+  })
+  @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiForbiddenResponse({ type: ForbiddenResponse })
+  @ApiCreatedResponse({})
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
-  @ApiBearerAuth()
   @Post()
   save(
     @Body(new ZodValidationPipe(createProductSchema))

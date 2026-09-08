@@ -10,6 +10,8 @@ import {
 import { Cart } from '../carts/carts.entity';
 import { Order } from '../orders/orders.entity';
 import { Roles } from './types/roles.enum';
+import { ApiResponseProperty } from '@nestjs/swagger';
+import { Role } from '../../decorators/role.decorator';
 
 @Entity('users')
 export class User {
