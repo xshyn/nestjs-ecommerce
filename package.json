@@ -30,11 +30,13 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^12.0.0",
+    "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "csrf-csrf": "^4.0.3",
     "dotenv": "^17.4.2",
     "ioredis": "^5.11.1",
     "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
     "pg": "^8.23.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -86,5 +88,10 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "unrs-resolver@1.12.2": true,
+    "bcrypt@6.0.0": true
   }
 }

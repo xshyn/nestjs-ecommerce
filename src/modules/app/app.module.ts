@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '../cache/cache.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { validateEnv } from '../../config/env.schema';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { APP_GUARD } from '@nestjs/core';
     InventoryModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
