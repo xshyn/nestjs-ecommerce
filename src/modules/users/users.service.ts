@@ -56,6 +56,7 @@ export class UsersService {
 
   async create(data: Partial<User>) {
     const user = this.userRepo.create(data);
-    return this.userRepo.save(user);
+    const {password , ...rest} = await this.userRepo.save(user);
+    return rest
   }
 }
