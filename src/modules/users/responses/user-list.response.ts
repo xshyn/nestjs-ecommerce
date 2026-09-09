@@ -1,6 +1,6 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
-import { ResponseEnvelope } from '../../../interceptors/response-envelope.interceptor';
 import { UserResponse } from './user.response';
+import { ResponseEnvelope } from '../../../types/response-envelope.interface';
 
 export class UserListResponse implements ResponseEnvelope<UserResponse> {
   @ApiResponseProperty({ example: 1 })

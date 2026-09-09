@@ -25,15 +25,35 @@ import {
   inventoryQuerySchema,
 } from './schemas/inventory-query.schema';
 import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { UpdateResponse } from '../../responses/update.response';
+import { ForbiddenResponse } from '../../responses/forbidden.response';
+import { ValidationFailedResponse } from '../../responses/validation-failed.response';
+import { UnauthorizedResponse } from '../../responses/unauthorized.response';
+import { InventoryResponse } from './responses/inventory.response';
+import { InventoryListResponse } from './responses/inventory-list.response';
 
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly service: InventoryService) {}
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all inventories' })
+  @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiForbiddenResponse({ type: ForbiddenResponse })
+  @ApiOkResponse({
+    type: InventoryListResponse,
+  })
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
-  @ApiBearerAuth()
   @UseInterceptors(ResponseEnvelopeInterceptor<Inventory>)
   @Get()
   find(
@@ -43,14 +63,26 @@ export class InventoryController {
     return this.service.find(inventoryQueryDto);
   }
 
+  @ApiOperation({ summary: 'Get inventory of a product' })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiOkResponse({
+    type: InventoryResponse,
+  })
   @Get(':productId')
   findOne(@Param('productId', ParseUUIDPipe) productId: string) {
     return this.service.findOne({ where: { productId } });
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update inventory of a product' })
+  @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiForbiddenResponse({ type: ForbiddenResponse })
+  @ApiOkResponse({
+    type: UpdateResponse,
+  })
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
-  @ApiBearerAuth()
   @Patch(':productId')
   update(
     @Param('productId', ParseUUIDPipe) productId: string,

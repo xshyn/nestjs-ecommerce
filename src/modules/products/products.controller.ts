@@ -47,7 +47,8 @@ import { ForbiddenResponse } from '../../responses/forbidden.response';
 import { ProductResponse } from './responses/product.response';
 import { OneProductResponse } from './responses/one-product.response';
 import { ProductListResponse } from './responses/product-list.response';
-import { ChangeProductResponse } from './responses/change-product.response';
+import { UpdateResponse } from '../../responses/update.response';
+import { DeleteResponse } from '../../responses/delete.response';
 
 @Controller('products')
 export class ProductsController {
@@ -99,7 +100,7 @@ export class ProductsController {
   @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
   @ApiBadRequestResponse({ type: ValidationFailedResponse })
   @ApiForbiddenResponse({ type: ForbiddenResponse })
-  @ApiOkResponse({ type: ChangeProductResponse })
+  @ApiOkResponse({ type: UpdateResponse })
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
   @ApiBearerAuth()
@@ -118,7 +119,7 @@ export class ProductsController {
   @ApiBadRequestResponse({ type: ValidationFailedResponse })
   @ApiForbiddenResponse({ type: ForbiddenResponse })
   @ApiOkResponse({
-    type: OmitType(ChangeProductResponse, ['generatedMaps'] as const),
+    type: DeleteResponse,
   })
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)

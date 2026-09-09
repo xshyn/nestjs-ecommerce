@@ -1,7 +1,7 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 import { ObjectLiteral, UpdateResult } from 'typeorm';
 
-export class ChangeProductResponse implements UpdateResult {
+export class UpdateResponse implements UpdateResult {
   @ApiProperty({ isArray: true, example: [] })
   generatedMaps: ObjectLiteral[];
 

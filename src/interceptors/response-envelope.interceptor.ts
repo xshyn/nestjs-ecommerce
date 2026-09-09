@@ -1,10 +1,6 @@
 import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { map } from 'rxjs';
-
-export interface ResponseEnvelope<T> {
-  count: number;
-  data: T | T[];
-}
+import { ResponseEnvelope } from '../types/response-envelope.interface';
 
 export class ResponseEnvelopeInterceptor<T> implements NestInterceptor<
   T,
