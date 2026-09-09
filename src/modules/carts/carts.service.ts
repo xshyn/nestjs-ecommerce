@@ -93,8 +93,6 @@ export class CartsService {
       productId,
       cartId: cart?.id,
     });
-    if (!result.affected || result.affected < 1)
-      throw new NotFoundException('Cart item not found');
     return result;
   }
 
@@ -105,8 +103,6 @@ export class CartsService {
     const result = await this.cartItemRepo.delete({
       cartId: cart.id,
     });
-    if (!result.affected || result.affected < 1)
-      throw new NotFoundException('Cart not found');
     return result;
   }
 }
