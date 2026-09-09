@@ -32,14 +32,37 @@ import {
 } from './schemas/update-order-status.schema';
 import { ResponseEnvelopeInterceptor } from '../../interceptors/response-envelope.interceptor';
 import { Order } from './orders.entity';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { UnauthorizedResponse } from '../../responses/unauthorized.response';
+import { ValidationFailedResponse } from '../../responses/validation-failed.response';
+import { OrderListResponse } from './responses/order-list.response';
+import { ForbiddenResponse } from '../../responses/forbidden.response';
+import { OrderWithItemsResponse } from './responses/order-with-items.response';
+import { OrderResponse } from './responses/order.response';
+import { NotFoundResponse } from '../../responses/not-found.response';
+import { UpdateResponse } from '../../responses/update.response';
 
-@UseGuards(AccessJwtAuthGuard)
 @ApiBearerAuth()
+@ApiUnauthorizedResponse({ type: UnauthorizedResponse })
+@UseGuards(AccessJwtAuthGuard)
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly service: OrdersService) {}
 
+  @ApiOperation({
+    summary: 'Get user orders list',
+  })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiOkResponse({ type: OrderListResponse })
   @UseInterceptors(ResponseEnvelopeInterceptor<Order>)
   @Get()
   findUserOrders(
@@ -50,6 +73,12 @@ export class OrdersController {
     return this.service.findAll({ userId: user.userId, ...query });
   }
 
+  @ApiOperation({
+    summary: 'Get all orders',
+  })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiForbiddenResponse({ type: ForbiddenResponse })
+  @ApiOkResponse({ type: OrderListResponse })
   @Role(Roles.ADMIN)
   @UseGuards(RoleGuard)
   @UseInterceptors(ResponseEnvelopeInterceptor<Order>)
@@ -61,6 +90,11 @@ export class OrdersController {
     return this.service.findAll(ordersListQueryDto);
   }
 
+  @ApiOperation({
+    summary: 'Get an order of user',
+  })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiOkResponse({ type: OrderWithItemsResponse })
   @Get(':id')
   findOne(
     @Request() { user }: { user: Payload },
@@ -72,11 +106,25 @@ export class OrdersController {
     });
   }
 
+  @ApiOperation({
+    summary: 'Checkout the user cart to create an order',
+  })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiCreatedResponse({ type: OrderResponse })
+  @ApiNotFoundResponse({ type: NotFoundResponse })
   @Post('checkout')
   checkout(@Request() { user }: { user: Payload }) {
     return this.service.checkout(user.userId);
   }
 
+  @ApiOperation({
+    summary: 'Update status of order',
+  })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiForbiddenResponse({ type: ForbiddenResponse })
+  @ApiOkResponse({ type: UpdateResponse })
+  @Role(Roles.ADMIN)
+  @UseGuards(RoleGuard)
   @Patch(':id/status')
   updateStatus(
     @Request() { user }: { user: Payload },
@@ -84,6 +132,6 @@ export class OrdersController {
     { status }: UpdateOrderStatusDto,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.service.updateStatus(id, user.userId, status, true);
+    return this.service.updateStatus(id, user.userId, status);
   }
 }

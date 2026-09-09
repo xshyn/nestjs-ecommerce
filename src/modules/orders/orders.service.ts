@@ -42,14 +42,6 @@ export class OrdersService {
       order: {
         [ordersListQueryDto?.sortOption!]: ordersListQueryDto?.sortDir,
       },
-      select: {
-        items: {
-          productName: true,
-          quantity: true,
-          subtotal: true,
-          unitPrice: true,
-        },
-      },
       where: {
         ...(isGteAmount || isLteAmount
           ? {
