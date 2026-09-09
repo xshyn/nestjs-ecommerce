@@ -36,12 +36,18 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
+  OmitType,
 } from '@nestjs/swagger';
 import { UnauthorizedResponse } from '../../responses/unauthorized.response';
 import { ValidationFailedResponse } from '../../responses/validation-failed.response';
 import { ForbiddenResponse } from '../../responses/forbidden.response';
+import { ProductResponse } from './responses/product.response';
+import { OneProductResponse } from './responses/one-product.response';
+import { ProductListResponse } from './responses/product-list.response';
+import { ChangeProductResponse } from './responses/change-product.response';
 
 @Controller('products')
 export class ProductsController {
@@ -54,7 +60,7 @@ export class ProductsController {
   @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
   @ApiBadRequestResponse({ type: ValidationFailedResponse })
   @ApiForbiddenResponse({ type: ForbiddenResponse })
-  @ApiCreatedResponse({})
+  @ApiCreatedResponse({ type: ProductResponse })
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
   @Post()
@@ -65,25 +71,35 @@ export class ProductsController {
     return this.service.save(createProductDto);
   }
 
+  @ApiOperation({
+    summary: 'Get list of products',
+  })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiOkResponse({ type: ProductListResponse })
   @UseInterceptors(ResponseEnvelopeInterceptor<Product>)
   @Get()
   list(
     @Query(new ZodValidationPipe(productsQuerySchema))
     productsQueryDto: ProductsQueryDto,
   ) {
-    return this.service.list({}, productsQueryDto);
+    return this.service.list(productsQueryDto);
   }
 
+  @ApiOperation({
+    summary: 'Get a Product by id',
+  })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiOkResponse({ type: OneProductResponse })
   @Get('/:id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.service.findOne({
-      where: { id },
-      relations: {
-        inventory: true,
-      },
-    });
+    return this.service.findOne(id);
   }
 
+  @ApiOperation({ summary: 'Updating a product by id' })
+  @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiForbiddenResponse({ type: ForbiddenResponse })
+  @ApiOkResponse({ type: ChangeProductResponse })
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
   @ApiBearerAuth()
@@ -96,9 +112,16 @@ export class ProductsController {
     return this.service.update({ id }, updateProductDto);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Deleting a product by id' })
+  @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
+  @ApiBadRequestResponse({ type: ValidationFailedResponse })
+  @ApiForbiddenResponse({ type: ForbiddenResponse })
+  @ApiOkResponse({
+    type: OmitType(ChangeProductResponse, ['generatedMaps'] as const),
+  })
   @Role(Roles.ADMIN)
   @UseGuards(AccessJwtAuthGuard, RoleGuard)
-  @ApiBearerAuth()
   @Delete('/:id')
   delete(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.delete({ id });

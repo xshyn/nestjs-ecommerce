@@ -32,7 +32,7 @@ export class CartsService {
     const cart = await this.getOrCreateCart(userId);
 
     const product = (await this.productService.findOne(
-      { where: { id: addItemDto.productId }, relations: { inventory: true } },
+      addItemDto.productId,
       true,
     )) as Product;
 

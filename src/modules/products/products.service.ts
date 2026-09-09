@@ -49,10 +49,7 @@ export class ProductsService {
     });
   }
 
-  async list(
-    where?: FindOptionsWhere<Product>,
-    productsQueryDto?: ProductsQueryDto,
-  ) {
+  async list(productsQueryDto?: ProductsQueryDto) {
     const productFieldsQuery = {
       ...(productsQueryDto?.id && { id: productsQueryDto.id }),
       ...(productsQueryDto?.isActive !== undefined && {
@@ -116,26 +113,28 @@ export class ProductsService {
     return products;
   }
 
-  async findOne(options: FindOneOptions<Product>, throwIfNotFound = false) {
-    const where = options.where as FindOptionsWhere<Product>;
+  async findOne(id: string, throwIfNotFound = false) {
     const cached = await this.cacheService.get<Product>(
       CacheKeys.product(
         await this.cacheService.getVersion(CACHE_VERSION.PRODUCTS),
-        where.id as string,
+        id,
       ),
     );
     if (cached) {
       return cached;
     }
 
-    const product = await this.productRepo.findOne(options);
+    const product = await this.productRepo.findOne({
+      where: { id },
+      relations: { inventory: true },
+    });
     if (!product && throwIfNotFound)
       throw new NotFoundException('Product not found');
 
     await this.cacheService.set<Product>(
       CacheKeys.product(
         await this.cacheService.getVersion(CACHE_VERSION.PRODUCTS),
-        where.id as string,
+        id,
       ),
       product as Product,
       CACHE_TTL.PRODUCT,
