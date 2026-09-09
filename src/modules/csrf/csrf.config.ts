@@ -2,6 +2,9 @@ import { ForbiddenException } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { doubleCsrf } from 'csrf-csrf';
 
+export const CSRF_COOKIE_NAME =
+  process.env.NODE_ENV === 'production' ? '__Host-csrf' : 'csrf';
+
 export const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
   getSecret: () => {
     return process.env.CSRF_SECRET!;
@@ -15,7 +18,7 @@ export const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
     return createHash('sha256').update(refresh).digest('hex');
   },
 
-  cookieName: '__Host-csrf',
+  cookieName: CSRF_COOKIE_NAME,
 
   cookieOptions: {
     httpOnly: false,

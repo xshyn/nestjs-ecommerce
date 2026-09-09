@@ -8,18 +8,13 @@ import {
   Req,
   Res,
   UseGuards,
-  UsePipes,
 } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import { LocalAuthGuard } from '../../guards/local-auth.guard';
-import {
-  AccessPayload,
-  Payload,
-  RefreshPayload,
-} from '../../types/payload.interface';
+import { AccessPayload, RefreshPayload } from '../../types/payload.interface';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import { SignupDto, signupSchema } from './schemas/signup.schema';
-import { type Request, type Response } from 'express';
+import type { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { TokenTtl } from './types/token-ttl.enum';
 import { RefreshJwtAuthGuard } from '../../guards/refresh-jwt-auth.guard';
@@ -29,11 +24,15 @@ import { AccessRefreshJwtAuthGuard } from '../../guards/access-refresh-jwt-auth.
 import { generateCsrfToken } from '../csrf/csrf.config';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiHeader,
   ApiOkResponse,
   ApiOperation,
+  ApiSecurity,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { LoginDto } from './schemas/login.schema';
@@ -92,6 +91,8 @@ export class AuthController {
   @ApiOperation({
     summary: 'Refresh user access',
   })
+  @ApiHeader({ name: 'x-csrf-token' })
+  @ApiBearerAuth()
   @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
   @ApiForbiddenResponse({ type: CsrfExceptionResponse })
   @ApiCreatedResponse({ type: AccessResponse })
@@ -118,6 +119,8 @@ export class AuthController {
   @ApiOperation({
     summary: 'Logout user',
   })
+  @ApiHeader({ name: 'x-csrf-token' })
+  @ApiBearerAuth()
   @ApiUnauthorizedResponse({ type: UnauthorizedResponse })
   @ApiForbiddenResponse({ type: CsrfExceptionResponse })
   @ApiOkResponse({ type: LogoutResponse })
@@ -140,6 +143,8 @@ export class AuthController {
   @ApiOkResponse({ type: CsrfResponse })
   @Get('csrf-token')
   csrfToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    return { csrf: generateCsrfToken(req, res, { overwrite: true }) };
+    const csrf = generateCsrfToken(req, res);
+
+    return { csrf };
   }
 }
