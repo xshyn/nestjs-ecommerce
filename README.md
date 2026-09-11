@@ -2,97 +2,291 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<h1 align="center">NestJS Ecommerce API</h1>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+<p align="center">A full-featured RESTful Ecommerce API built with NestJS, TypeORM, PostgreSQL, Redis, and JWT authentication.</p>
+
+<p align="center">
+  <a href="https://nestjs.com" target="_blank">NestJS</a> •
+  <a href="https://typeorm.org" target="_blank">TypeORM</a> •
+  <a href="https://www.postgresql.org" target="_blank">PostgreSQL</a> •
+  <a href="https://redis.io" target="_blank">Redis</a> •
+  <a href="https://swagger.io" target="_blank">Swagger</a>
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Table of Contents
 
-## Project setup
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Modules](#modules)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+  - [Database Setup](#database-setup)
+  - [Running the Application](#running-the-application)
+  - [Seeding the Database](#seeding-the-database)
+- [API Documentation](#api-documentation)
+- [Authentication & Security](#authentication--security)
+- [API Endpoints Summary](#api-endpoints-summary)
+- [Project Structure](#project-structure)
+- [Scripts](#scripts)
+- [License](#license)
+
+---
+
+## Overview
+
+This is a backend REST API for an ecommerce platform. It provides endpoints for user management, product catalog, inventory tracking, shopping carts, and order processing. The API implements JWT-based authentication with refresh token rotation, CSRF protection, role-based access control, Redis caching, and rate limiting.
+
+## Tech Stack
+
+| Category | Technology |
+|---|---|
+| Runtime | Node.js |
+| Framework | NestJS 11 |
+| Language | TypeScript 5.7 |
+| ORM | TypeORM 0.3 |
+| Database | PostgreSQL |
+| Cache / Store | Redis (ioredis) |
+| Auth | Passport (Local + JWT), bcrypt |
+| Validation | Zod |
+| API Docs | Swagger (OpenAPI) |
+| Rate Limiting | @nestjs/throttler |
+| CSRF | csrf-csrf (double-submit cookie) |
+
+## Architecture
+
+The application follows a modular architecture where each domain concern (auth, users, products, etc.) is encapsulated in its own NestJS module. Key architectural patterns:
+
+- **Module-based organization** — each module bundles its controller, service, entity, DTOs/schemas, and response types
+- **Zod validation** — request bodies and query params are validated through Zod schemas via a custom `ZodValidationPipe`
+- **Response envelope** — list endpoints return `{ count, data }` via `ResponseEnvelopeInterceptor`
+- **TypeORM subscribers** — cache invalidation is handled automatically on entity changes
+- **Global middleware** — CORS, cookie parsing, rate limiting, and CSRF protection are applied globally or selectively
+
+## Modules
+
+| Module | Description | Documentation |
+|---|---|---|
+| **Auth** | Signup, login, token refresh, logout, CSRF tokens | [Auth Module](src/modules/auth/README.md) |
+| **Users** | User profiles, admin user listing | [Users Module](src/modules/users/README.md) |
+| **Products** | Product CRUD with cached listings | [Products Module](src/modules/products/README.md) |
+| **Inventory** | Stock quantity management per product | [Inventory Module](src/modules/inventory/README.md) |
+| **Carts** | Shopping cart and cart item operations | [Carts Module](src/modules/carts/README.md) |
+| **Orders** | Checkout flow and order management | [Orders Module](src/modules/orders/README.md) |
+| **Cache** | Global Redis cache service with versioned invalidation | [Cache Module](src/modules/cache/README.md) |
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js** >= 18
+- **PostgreSQL** >= 14
+- **Redis** >= 6
+
+### Installation
 
 ```bash
-$ npm install
+git clone <repository-url>
+cd ecommerce
+npm install
 ```
 
-## Compile and run the project
+### Environment Variables
+
+Copy the example environment file and fill in the values:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+| Variable | Description | Example |
+|---|---|---|
+| `NODE_ENV` | Environment mode | `development` |
+| `PORT` | Server port | `3000` |
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_USERNAME` | PostgreSQL user | `root` |
+| `DB_PASSWORD` | PostgreSQL password | `root` |
+| `DB_NAME` | Database name | `nest_ecommerce` |
+| `JWT_SECRET_ACCESS` | Access token secret (min 32 chars) | `<random-string>` |
+| `JWT_SECRET_REFRESH` | Refresh token secret (min 32 chars) | `<random-string>` |
+| `CSRF_SECRET` | CSRF secret (min 32 chars) | `<random-string>` |
+| `REDIS_HOST` | Redis host | `localhost` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `REDIS_PASSWORD` | Redis password (optional) | — |
+
+### Database Setup
+
+Create the PostgreSQL database:
+
+```sql
+CREATE DATABASE nest_ecommerce;
+```
+
+The application uses `synchronize: true` in development, so tables are created automatically on startup.
+
+### Running the Application
 
 ```bash
-# unit tests
-$ npm run test
+# Development (with file watching)
+npm run start:dev
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Production
+npm run build
+npm run start:prod
 ```
 
-## Deployment
+The server starts at `http://localhost:3000` by default.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Seeding the Database
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Populate the database with sample data (30 users, 50 products, inventories, carts, orders):
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run seed:run
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## API Documentation
 
-## Resources
+Swagger UI is available at:
 
-Check out a few resources that may come in handy when working with NestJS:
+```
+http://localhost:3000/api
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+The Swagger document is configured with Bearer authentication. You can obtain a token via `POST /auth/login` and paste it into the Swagger authorizer to test protected endpoints.
 
-## Support
+## Authentication & Security
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+| Feature | Implementation |
+|---|---|
+| Password hashing | bcrypt (salt rounds: 10) |
+| Access tokens | JWT, 15-minute TTL, sent via `Authorization: Bearer` header |
+| Refresh tokens | JWT, 30-day TTL, stored in httpOnly `refresh` cookie |
+| Token rotation | Refreshing rotates both tokens; old access token is blacklisted in Redis |
+| CSRF protection | Double-submit cookie pattern (`x-csrf-token` header) on refresh/logout |
+| Role-based access | `@Role()` decorator + `RoleGuard` (roles: `user`, `admin`) |
+| Rate limiting | Global throttler: 8 requests per 10 seconds |
+| CORS | Configured for `http://localhost:3000` with credentials |
 
-## Stay in touch
+## API Endpoints Summary
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Auth (`/auth`)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/auth/signup` | Public | Register a new user |
+| POST | `/auth/login` | Public | Login and receive tokens |
+| POST | `/auth/refresh` | Refresh cookie + CSRF | Rotate tokens |
+| POST | `/auth/logout` | Bearer + CSRF | Revoke tokens |
+| GET | `/auth/csrf-token` | Public | Get CSRF token |
+
+### Users (`/users`)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/users` | Admin | List all users (paginated) |
+| GET | `/users/me` | Bearer | Get current user profile |
+
+### Products (`/products`)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/products` | Admin | Create a product |
+| GET | `/products` | Public | List products (paginated, cached) |
+| GET | `/products/:id` | Public | Get a product by ID (cached) |
+| PATCH | `/products/:id` | Admin | Update a product |
+| DELETE | `/products/:id` | Admin | Delete a product |
+
+### Inventory (`/inventory`)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/inventory` | Admin | List inventory (paginated) |
+| GET | `/inventory/:productId` | Public | Get inventory for a product |
+| PATCH | `/inventory/:productId` | Admin | Update stock quantity |
+
+### Carts (`/carts`)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/carts` | Bearer | Get current user's cart |
+| POST | `/carts/items` | Bearer | Add item to cart |
+| PATCH | `/carts/items/:productId` | Bearer | Update cart item quantity |
+| DELETE | `/carts/items/:productId` | Bearer | Remove item from cart |
+| DELETE | `/carts` | Bearer | Clear cart |
+
+### Orders (`/orders`)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/orders/checkout` | Bearer | Convert cart to order |
+| GET | `/orders` | Bearer | List current user's orders |
+| GET | `/orders/list` | Admin | List all orders |
+| GET | `/orders/:id` | Bearer | Get order by ID |
+| PATCH | `/orders/:id/status` | Admin | Update order status |
+
+## Project Structure
+
+```
+src/
+├── main.ts                          # Bootstrap (CORS, Swagger, cookie-parser)
+├── config/
+│   └── env.schema.ts                # Zod env validation
+├── database/
+│   ├── data-source.ts               # TypeORM DataSource (CLI/seeding)
+│   ├── factories/                   # Faker factories for seeding
+│   └── seeds/                       # Database seeders
+├── decorators/
+│   └── role.decorator.ts            # @Role() decorator
+├── guards/
+│   ├── access-jwt-auth.guard.ts
+│   ├── access-refresh-jwt-auth.guard.ts
+│   ├── local-auth.guard.ts
+│   ├── refresh-jwt-auth.guard.ts
+│   └── role.guard.ts
+├── interceptors/
+│   └── response-envelope.interceptor.ts
+├── modules/
+│   ├── app/                         # Root module
+│   ├── auth/                        # Authentication
+│   ├── cache/                       # Redis cache (global)
+│   ├── carts/                       # Shopping carts
+│   ├── csrf/                        # CSRF configuration
+│   ├── inventory/                   # Stock management
+│   ├── orders/                      # Order processing
+│   ├── products/                    # Product catalog
+│   └── users/                       # User management
+├── pipes/
+│   └── zod-validation.pipe.ts       # Zod validation pipe
+├── responses/                       # Shared Swagger response DTOs
+├── schemas/
+│   └── query.schema.ts              # Shared pagination schemas
+└── types/
+    ├── payload.interface.ts
+    ├── response-envelope.interface.ts
+    └── sort-directions.type.ts
+```
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run start:dev` | Start in development mode with file watching |
+| `npm run start:prod` | Start in production mode |
+| `npm run build` | Compile the application |
+| `npm run seed:run` | Seed the database with sample data |
+| `npm run lint` | Run ESLint with auto-fix |
+| `npm run format` | Format code with Prettier |
+| `npm run test` | Run unit tests |
+| `npm run test:cov` | Run tests with coverage |
+| `npm run test:e2e` | Run end-to-end tests |
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is licensed under the [MIT License](LICENSE).
